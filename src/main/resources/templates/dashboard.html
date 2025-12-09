@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="UTF-8">
+        <title>Panel de control de correos</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" th:href="@{/css/style.css}">
+    </head>
+    <body>
+        <div class="sidebar">
+        <h4 class="text-center mb-4">📊 Dashboard</h4>
+
+        <a href="#">🏠 Inicio</a>
+        <a href="#">📧 Correos</a>
+        <a href="#">👤 Usuarios</a>
+        <a href="#">⚙ Configuración</a>
+        <a href="#">🚪 Cerrar sesión</a>
+    </div>
+
+    <!-- ============= CONTENT ============= -->
+    <div class="content">
+
+        <!-- NAVBAR SUPERIOR -->
+        <div class="nav-custom d-flex justify-content-between align-items-center">
+            <h3 class="m-0">Panel de Control</h3>
+            <span>Bienvenido, <b th:text="${usuario != null ? usuario : 'Invitado'}"></b></span>
+        </div>
+
+        <!-- MÉTRICAS -->
+        <div class="row mb-4">
+
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5>Total Correos</h5>
+                        <h2 class="text-primary" th:text="${totalCorreos}">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5>Correos Enviados Hoy</h5>
+                        <h2 class="text-success" th:text="${correosHoy}">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5>Usuarios</h5>
+                        <h2 class="text-warning" th:text="${usuarios}">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5>Errores</h5>
+                        <h2 class="text-danger" th:text="${errores}">0</h2>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TABLA -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="m-0">Últimos correos enviados</h5>
+            </div>
+
+            <div class="card-body">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Correo</th>
+                            <th>Asunto</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr th:each="item : ${listaCorreos}">
+                            <td th:text="${item.destinatario}"></td>
+                            <td th:text="${item.asunto}"></td>
+                            <td>
+                                <span class="badge bg-success" 
+                                    th:if="${item.estado == 'OK'}">OK</span>
+
+                                <span class="badge bg-danger" 
+                                    th:if="${item.estado == 'ERROR'}">Error</span>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${listaCorreos == null or #lists.isEmpty(listaCorreos)}">
+                            <td colspan="4" class="text-center">No hay registros.</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    </body>
+
+</html>

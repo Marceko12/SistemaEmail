@@ -51,6 +51,14 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- Gson JSON Parser -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+
+
         <!-- Micrometer Prometheus registry for Prometheus scraping -->
         <dependency>
             <groupId>io.micrometer</groupId>

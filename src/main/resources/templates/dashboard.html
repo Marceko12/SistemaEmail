@@ -1,217 +1,201 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dashboard de Correos - Moderno</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard de Correos - Tailwind</title>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 min-h-screen flex">
 
-    <!-- SIDEBAR -->
-    <nav class="sidebar" role="navigation" aria-label="Menú principal">
-        <h4>📊 Dashboard</h4>
+  <!-- SIDEBAR -->
+  <nav class="w-64 bg-white shadow-xl p-6 flex flex-col gap-4 fixed inset-y-0 left-0 z-20">
+    <h4 class="text-2xl font-bold text-indigo-600 text-center">📊 Dashboard</h4>
 
-        <a href="#" class="active" aria-current="page">🏠 Inicio</a>
-        <a href="#">📧 Correos</a>
-        <a href="#">👤 Usuarios</a>
-        <a href="#">⚙ Configuración</a>
-        <a href="#">🚪 Cerrar sesión</a>
-    </nav>
+    <a class="px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium">🏠 Inicio</a>
 
-    <!-- CONTENIDO -->
-    <main class="content" role="main" tabindex="0">
+    <!-- Submenú correos -->
+    <details class="group">
+      <summary class="px-4 py-2 rounded-lg hover:bg-indigo-100 cursor-pointer select-none font-medium flex justify-between items-center">📧 Correos</summary>
+      <div class="ml-4 mt-2 flex flex-col gap-2">
+        <a class="px-3 py-1 rounded hover:bg-gray-200 cursor-pointer">Enviados</a>
+        <a class="px-3 py-1 rounded hover:bg-gray-200 cursor-pointer">Recibidos</a>
+      </div>
+    </details>
 
-        <header class="nav-custom">
-            <h3>Panel de Control</h3>
-            <span>Bienvenido, <b th:text="${usuario != null ? usuario : 'Invitado'}"></b></span>
+    <a class="px-4 py-2 rounded-lg hover:bg-indigo-100 cursor-pointer font-medium">👤 Usuarios</a>
+    <a class="px-4 py-2 rounded-lg hover:bg-indigo-100 cursor-pointer font-medium">⚙ Configuración</a>
+    <a class="px-4 py-2 rounded-lg hover:bg-red-100 cursor-pointer font-medium text-red-600">🚪 Cerrar sesión</a>
+  </nav>
+
+  <!-- CONTENIDO -->
+  <main class="flex-1 ml-64 p-8">
+
+    <!-- Encabezado -->
+    <header class="flex justify-between items-center mb-6 border-b pb-3">
+      <h3 class="text-3xl font-bold text-gray-800">Panel de Control</h3>
+      <span class="text-gray-600">Bienvenido, <b th:text="${usuario != null ? usuario : 'Invitado'}"></b></span>
+    </header>
+
+    <!-- Estadísticas -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+
+      <article class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+        <h5 class="text-gray-600 font-medium">Total Correos</h5>
+        <h2 class="text-4xl font-bold text-indigo-600" th:text="${totalCorreos}">0</h2>
+      </article>
+
+      <article class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+        <h5 class="text-gray-600 font-medium">Correos Enviados Hoy</h5>
+        <h2 class="text-4xl font-bold text-green-600" th:text="${correosHoy}">0</h2>
+      </article>
+
+      <article class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+        <h5 class="text-gray-600 font-medium">Usuarios</h5>
+        <h2 class="text-4xl font-bold text-yellow-500" th:text="${usuarios}">0</h2>
+      </article>
+
+      <article class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+        <h5 class="text-gray-600 font-medium">Errores</h5>
+        <h2 class="text-4xl font-bold text-red-600" th:text="${errores}">0</h2>
+      </article>
+
+    </section>
+
+    <!-- Tabla correos -->
+    <section>
+      <div class="bg-white rounded-xl shadow overflow-hidden">
+        <header class="px-6 py-4 border-b">
+          <h5 class="text-xl font-semibold text-indigo-600">Últimos correos enviados</h5>
         </header>
 
-        <section class="stats-grid" aria-label="Estadísticas principales">
-            <article class="card" role="region" aria-labelledby="totalCorreosLabel">
-                <h5 id="totalCorreosLabel">Total Correos</h5>
-                <h2 class="text-primary" th:text="${totalCorreos}">0</h2>
-            </article>
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-left">
+            <thead class="bg-indigo-600 text-white">
+              <tr>
+                <th class="px-4 py-3">Correo</th>
+                <th class="px-4 py-3">Asunto</th>
+                <th class="px-4 py-3">Estado</th>
+              </tr>
+            </thead>
 
-            <article class="card" role="region" aria-labelledby="correosHoyLabel">
-                <h5 id="correosHoyLabel">Correos Enviados Hoy</h5>
-                <h2 class="text-success" th:text="${correosHoy}">0</h2>
-            </article>
+            <tbody class="text-gray-700 divide-y">
+              <tr th:each="item : ${listaCorreos}" class="hover:bg-gray-100">
+                <td class="px-4 py-3" th:text="${item.destinatario}"></td>
+                <td class="px-4 py-3" th:text="${item.asunto}"></td>
+                <td class="px-4 py-3">
+                  <span class="text-sm bg-green-500 text-white px-2 py-1 rounded" th:if="${item.estado == 'OK'}">OK</span>
+                  <span class="text-sm bg-red-500 text-white px-2 py-1 rounded" th:if="${item.estado == 'ERROR'}">Error</span>
+                </td>
+              </tr>
 
-            <article class="card" role="region" aria-labelledby="usuariosLabel">
-                <h5 id="usuariosLabel">Usuarios</h5>
-                <h2 class="text-warning" th:text="${usuarios}">0</h2>
-            </article>
-
-            <article class="card" role="region" aria-labelledby="erroresLabel">
-                <h5 id="erroresLabel">Errores</h5>
-                <h2 class="text-danger" th:text="${errores}">0</h2>
-            </article>
-        </section>
-
-        <section aria-label="Últimos correos enviados">
-            <div class="card">
-                <header class="card-header">
-                    <h5>Últimos correos enviados</h5>
-                </header>
-                <div class="card-body p-0">
-                    <table class="table table-hover table-striped mb-0" role="table" aria-describedby="correosTableDesc">
-                        <caption id="correosTableDesc" class="visually-hidden">Lista de correos enviados recientemente</caption>
-                        <thead class="table-dark">
-                            <tr>
-                                <th scope="col">Correo</th>
-                                <th scope="col">Asunto</th>
-                                <th scope="col">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="item : ${listaCorreos}">
-                                <td th:text="${item.destinatario}"></td>
-                                <td th:text="${item.asunto}"></td>
-                                <td>
-                                    <span class="badge bg-success" th:if="${item.estado == 'OK'}">OK</span>
-                                    <span class="badge bg-danger" th:if="${item.estado == 'ERROR'}">Error</span>
-                                </td>
-                            </tr>
-                            <tr th:if="${listaCorreos == null or #lists.isEmpty(listaCorreos)}">
-                                <td colspan="3" class="text-center py-4">No hay registros.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- CHATBOT BURBUJA -->
-    <button id="chatbot-bubble" aria-label="Abrir chat de asistencia">💬</button>
-
-    <!-- CHATBOT -->
-    <section id="chatbot-container" role="region" aria-label="Chatbot de asistencia" aria-live="polite" aria-hidden="true">
-        <div id="chat-window" tabindex="0" aria-live="polite" aria-relevant="additions">
-            <div id="messages" role="log" aria-live="polite" aria-atomic="false"></div>
+              <tr th:if="${listaCorreos == null or #lists.isEmpty(listaCorreos)}">
+                <td colspan="3" class="text-center py-6">No hay registros.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
-        <div id="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Escribe un mensaje..." aria-label="Campo de texto para enviar mensaje" />
-            <button id="chat-send" aria-label="Enviar mensaje">Enviar</button>
-        </div>
+      </div>
     </section>
 
-    <section id="formulario-correo-section" style="display:none; margin-top: 2rem;" aria-label="Formulario para enviar correo">
-        <div class="card p-4 shadow-sm" style="border-radius: var(--border-radius);">
-            <h4>Enviar Correo</h4>
-            <form id="form-correo" novalidate method="post" action="/correo/enviar">
-                <div class="mb-3">
-                    <label for="correo-para" class="form-label">Para</label>
-                    <input
-                        type="email"
-                        class="form-control"
-                        id="correo-para"
-                        name="destinatario"
-                        placeholder="correo@example.com"
-                        required
-                        aria-required="true"
-                    />
-                    <div class="invalid-feedback">Por favor ingresa un correo válido.</div>
-                </div>
+    <!-- Formulario para enviar correo -->
+    <section id="formulario-correo-section" class="hidden mt-10">
+      <div class="bg-white p-6 rounded-xl shadow">
+        <h4 class="text-2xl font-bold mb-4">Enviar Correo</h4>
 
-                <div class="mb-3">
-                    <label for="correo-asunto" class="form-label">Asunto</label>
-                    <input
-                        type="text"
-                        class="form-control"
-                        id="correo-asunto"
-                        name="asunto"
-                        placeholder="Asunto del correo"
-                        required
-                        aria-required="true"
-                    />
-                    <div class="invalid-feedback">El asunto es obligatorio.</div>
-                </div>
+        <form id="form-correo" method="post" action="/correo/enviar" class="space-y-4" novalidate>
 
-                <div class="mb-3">
-                    <label for="correo-mensaje" class="form-label">Mensaje</label>
-                    <textarea
-                        class="form-control"
-                        id="correo-mensaje"
-                        name="mensaje"
-                        rows="5"
-                        placeholder="Escribe el mensaje aquí..."
-                        required
-                        aria-required="true"
-                    ></textarea>
-                    <div class="invalid-feedback">El mensaje no puede estar vacío.</div>
-                </div>
+          <div>
+            <label for="correo-para" class="font-medium">Para</label>
+            <input id="correo-para" name="destinatario" type="email" required
+                   class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300" />
+          </div>
 
-                <button type="submit" class="btn btn-success">Enviar Correo</button>
-                <button type="button" id="cancelar-envio" class="btn btn-secondary ms-2">Cancelar</button>
-            </form>
-        </div>
+          <div>
+            <label for="correo-asunto" class="font-medium">Asunto</label>
+            <input id="correo-asunto" name="asunto" type="text" required
+                   class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300" />
+          </div>
+
+          <div>
+            <label for="correo-mensaje" class="font-medium">Mensaje</label>
+            <textarea id="correo-mensaje" name="mensaje" rows="5" required
+                      class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300"></textarea>
+          </div>
+
+          <button class="bg-green-600 text-white px-4 py-2 rounded-lg">Enviar Correo</button>
+          <button type="button" id="cancelar-envio" class="bg-gray-400 text-white px-4 py-2 rounded-lg ml-2">Cancelar</button>
+        </form>
+      </div>
     </section>
 
+  </main>
 
+  <!-- CHATBOT BURBUJA -->
+  <button id="chatbot-bubble" class="fixed bottom-6 right-6 bg-indigo-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center text-3xl">💬</button>
 
-    <!-- Bootstrap JS bundle (popper + bootstrap) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        // Mostrar / Ocultar chatbot
-        const chatbotBubble = document.getElementById("chatbot-bubble");
-        const chatbotContainer = document.getElementById("chatbot-container");
+  <!-- CHATBOT -->
+  <section id="chatbot-container" class="hidden fixed bottom-28 right-6 w-96 h-96 bg-white border shadow-xl rounded-xl flex flex-col overflow-hidden">
+    <div id="chat-window" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+      <div id="messages" class="flex flex-col gap-2"></div>
+    </div>
 
-        chatbotBubble.addEventListener("click", () => {
-            const visible = chatbotContainer.style.display === "flex";
-            chatbotContainer.style.display = visible ? "none" : "flex";
-            chatbotContainer.setAttribute("aria-hidden", visible);
-            if (!visible) {
-                document.getElementById("chat-input").focus();
-            }
+    <div class="p-3 border-t flex gap-2">
+      <input id="chat-input" type="text" placeholder="Escribe un mensaje..." class="flex-1 border rounded-full px-4 py-2" />
+      <button id="chat-send" class="bg-green-600 text-white px-4 py-2 rounded-full">Enviar</button>
+    </div>
+  </section>
+
+  <!-- Scripts funcionales conservados -->
+  <script>
+    const chatbotBubble = document.getElementById("chatbot-bubble");
+    const chatbotContainer = document.getElementById("chatbot-container");
+
+    chatbotBubble.addEventListener("click", () => {
+      chatbotContainer.classList.toggle("hidden");
+    });
+
+    const chatSendBtn = document.getElementById("chat-send");
+    const chatInput = document.getElementById("chat-input");
+    const messages = document.getElementById("messages");
+
+    function agregarMensaje(texto, tipo) {
+      const msg = document.createElement("div");
+      msg.className = tipo === "user"
+        ? "self-end bg-indigo-600 text-white px-3 py-2 rounded-xl max-w-xs"
+        : "self-start bg-gray-300 text-gray-800 px-3 py-2 rounded-xl max-w-xs";
+
+      msg.textContent = texto;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    async function enviarMensaje() {
+      const texto = chatInput.value.trim();
+      if (!texto) return;
+      agregarMensaje(texto, "user");
+      chatInput.value = "";
+
+      try {
+        const response = await fetch("/chat/mensaje", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mensaje: texto }),
         });
 
-        // Enviar mensaje
-        const chatSendBtn = document.getElementById("chat-send");
-        const chatInput = document.getElementById("chat-input");
-        const messages = document.getElementById("messages");
+        const data = await response.text();
+        agregarMensaje(data, "bot");
+      } catch {
+        agregarMensaje("⚠️ Error al conectar con el servidor.", "bot");
+      }
+    }
 
-        function agregarMensaje(texto, tipo) {
-            const msg = document.createElement("div");
-            msg.classList.add("message", tipo);
-            msg.textContent = texto;
-            messages.appendChild(msg);
-            messages.scrollTop = messages.scrollHeight;
-        }
-
-        async function enviarMensaje() {
-            const texto = chatInput.value.trim();
-            if (texto === "") return;
-            agregarMensaje(texto, "user");
-            chatInput.value = "";
-
-            try {
-                const response = await fetch("/chat/mensaje", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ mensaje: texto }),
-                });
-
-                const data = await response.text();
-                agregarMensaje(data, "bot");
-            } catch {
-                agregarMensaje("⚠️ Error al conectar con el servidor.", "bot");
-            }
-        }
-
-        chatSendBtn.addEventListener("click", enviarMensaje);
-        chatInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") enviarMensaje();
-        });
-    </script>
-    <script th:src="@{/js/script.js}"></script>
+    chatSendBtn.addEventListener("click", enviarMensaje);
+    chatInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") enviarMensaje();
+    });
+  </script>
 
 </body>
 </html>

@@ -8,7 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.system.emails.model.CorreoDto;
+import com.system.emails.model.dto.CorreoDto;
+
 
 @Controller
 public class DashboardController {

@@ -1,4 +1,4 @@
-package com.system.emails.model;
+package com.system.emails.model.dto;
 
 import java.time.LocalDateTime;
 
@@ -15,6 +15,12 @@ public class CorreoDto {
 
 
     public CorreoDto() {
+    }
+
+    public CorreoDto(String destinatario, String asunto, String mensaje) {
+    this.destinatario = destinatario;
+    this.asunto = asunto;
+    this.mensaje = mensaje;
     }
 
     public CorreoDto(String destinatario, String asunto, String mensaje, String cc, String bcc, String estado, LocalDateTime fecha) {

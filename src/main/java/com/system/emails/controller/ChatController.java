@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.system.emails.model.CorreoDto;
+import com.system.emails.model.dto.CorreoDto;
 import com.system.emails.service.CorreoService;
 import com.system.emails.service.GeminiService;
 
@@ -36,72 +36,94 @@ public ResponseEntity<?> procesar(@RequestBody Map<String, String> body) {
         String mensajeUsuario = body.get("mensaje");
 
         String prompt = """
-            Eres un asistente que interpreta texto libre para enviar correos electrónicos.
-            Cuando el usuario escribe un texto indicando enviar un correo, responde SOLO con un JSON EXACTO con este formato, sin comillas invertidas, sin formato markdown ni ningún texto adicional:
+                Eres un asistente que interpreta texto libre para enviar correos electrónicos.
 
-            {
-            "accion": "enviar_correo",
-            "para": "correo@example.com",
-            "asunto": "texto asunto",
-            "mensaje": "contenido del mensaje"f
-            }
+                REGLAS IMPORTANTES:
+                - Responde SOLO con un JSON válido.
+                - NO uses comillas invertidas.
+                - NO uses bloques de código como ```json o ```.
+                - NO uses markdown.
+                - NO añadas texto antes ni después del JSON.
+                - El JSON debe ser EXACTAMENTE el que se pide.
 
-            Si el texto NO es para enviar correos, responde SOLO con un JSON EXACTO, sin comillas invertidas ni formato markdown:
+                Formato para enviar correo:
+                {
+                "accion": "enviar_correo",
+                "para": "correo@example.com",
+                "asunto": "texto asunto",
+                "mensaje": "contenido del mensaje"
+                }
 
-            {
-            "accion": "hablar",
-            "respuesta": "Aquí tu explicación simple."
-            }
+                Formato cuando NO es un correo:
+                {
+                "accion": "hablar",
+                "respuesta": "Aquí tu explicación simple."
+                }
 
-            Ejemplo:
-
-            Usuario: Quiero enviar un correo a juan@ejemplo.com con asunto Hola y mensaje ¿Cómo estás?
-            Respuesta:
-            {
-            "accion": "enviar_correo",
-            "para": "juan@ejemplo.com",
-            "asunto": "Hola",
-            "mensaje": "¿Cómo estás?"
-            }
-
-            Usuario: %s
-
-            """.formatted(mensajeUsuario);
+                Usuario: %s
+                """.formatted(mensajeUsuario);
 
 
+        // Llamada a Gemini
         String respuestaGemini = geminiService.generarRespuesta(prompt);
 
-        System.out.println("Respuesta Gemini antes de parsear: " + respuestaGemini);
+        System.out.println("RAW Gemini: " + respuestaGemini);
 
-        // Validar JSON antes de parsear
+        // 🔥 PROTECCIÓN: si no devuelve JSON, lo detectamos y devolvemos mensaje amigable
+        if (respuestaGemini == null || respuestaGemini.isBlank()) {
+            return ResponseEntity.internalServerError().body("⚠️ El modelo no respondió.");
+        }
+
+        // Si devuelve HTML o texto raro → NO parsear
+        if (!respuestaGemini.trim().startsWith("{")) {
+            return ResponseEntity.ok("⚠️ El servicio está saturado. Intenta de nuevo.");
+        }
+
+        // Intentar parsear JSON
+        JsonObject json;
         try {
-            JsonObject json = JsonParser.parseString(respuestaGemini).getAsJsonObject();
-            String accion = json.get("accion").getAsString();
+            json = JsonParser.parseString(respuestaGemini).getAsJsonObject();
+        } catch (Exception e) {
+            return ResponseEntity.ok("⚠️ El modelo devolvió un formato inesperado. Intenta de nuevo.");
+        }
 
-            if (accion.equals("enviar_correo")) {
+        // Validar estructura esperada
+        if (!json.has("accion")) {
+            return ResponseEntity.ok("⚠️ Respuesta inesperada del modelo.");
+        }
 
-                CorreoDto dto = new CorreoDto();
-                dto.setDestinatario(json.get("para").getAsString());
-                dto.setAsunto(json.get("asunto").getAsString());
-                dto.setMensaje(json.get("mensaje").getAsString());
+        String accion = json.get("accion").getAsString();
 
-                correoService.enviarCorreo(dto);
+        // ✔ Acción: enviar correo
+        if (accion.equals("enviar_correo")) {
 
-                return ResponseEntity.ok("📨 Correo enviado correctamente.");
+            if (!json.has("para") || !json.has("asunto") || !json.has("mensaje")) {
+                return ResponseEntity.ok("⚠️ El JSON recibido está incompleto.");
             }
 
-            return ResponseEntity.ok(json.get("respuesta").getAsString());
+            CorreoDto dto = new CorreoDto(
+                json.get("para").getAsString(),
+                json.get("asunto").getAsString(),
+                json.get("mensaje").getAsString()
+            );
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return ResponseEntity.internalServerError()
-                .body("Respuesta no es JSON válido: " + respuestaGemini);
+            correoService.enviarCorreo(dto);
+
+            return ResponseEntity.ok("📨 Correo enviado correctamente.");
         }
+
+        // ✔ Acción: hablar
+        if (accion.equals("hablar")) {
+            return ResponseEntity.ok(json.get("respuesta").getAsString());
+        }
+
+        // Acciones desconocidas
+        return ResponseEntity.ok("⚠️ Acción no reconocida.");
 
     } catch (Exception e) {
         e.printStackTrace();
         return ResponseEntity.internalServerError()
-                .body("Error al procesar mensaje: " + e.getMessage());
+            .body("⚠️ Error interno: " + e.getMessage());
     }
 }
 

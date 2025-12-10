@@ -43,7 +43,7 @@ public ResponseEntity<?> procesar(@RequestBody Map<String, String> body) {
             "accion": "enviar_correo",
             "para": "correo@example.com",
             "asunto": "texto asunto",
-            "mensaje": "contenido del mensaje"
+            "mensaje": "contenido del mensaje"f
             }
 
             Si el texto NO es para enviar correos, responde SOLO con un JSON EXACTO, sin comillas invertidas ni formato markdown:

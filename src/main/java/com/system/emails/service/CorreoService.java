@@ -11,12 +11,11 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 
 
+
+import org.springframework.stereotype.Service;
 import com.system.emails.model.EmailEntity;
 import com.system.emails.model.UserEntity;
 import com.system.emails.model.dto.CorreoDto;
@@ -64,41 +63,53 @@ public class CorreoService {
     // Método para guardar correo con relación a usuarios y múltiples destinatarios
     
  public void guardarCorreo(CorreoForm form) {
+        // Spring Security devuelve el email (username) configurado en CustomUserDetailsService
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String emailUsuario = authentication.getName();
+    
 
-    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+         // Buscar destinatario por email
+         UserEntity emisor = userRepo.findByEmail(emailUsuario)
+                .orElseThrow(() -> new RuntimeException("El usuario autenticado no existe"));
 
-    if (auth == null || !auth.isAuthenticated()) {
-        throw new RuntimeException("No hay usuario autenticado");
+        // Buscar destinatario por email
+        UserEntity destinatario = userRepo.findByEmail(form.getPara())
+                .orElseThrow(() -> new RuntimeException("El destinatario no existe"));
+
+        EmailEntity email = new EmailEntity();
+        email.setEmisor(emisor);
+        email.getDestinatarios().add(destinatario);
+        email.setSubject(form.getAsunto());
+        email.setMessage(form.getMensaje());
+        email.setSentAt(LocalDateTime.now());
+        email.setStatus("ENVIADO");
+
+        emailRepository.save(email);
     }
 
-    // Spring Security devuelve el email (username) configurado en CustomUserDetailsService
-    String emailUsuario = auth.getName();
+    public void enviarCorreoMultiple(UserEntity emisor, List<UserEntity> destinatarios, String subject, String message) {
+        if (destinatarios == null || destinatarios.isEmpty()) {
+            throw new IllegalArgumentException("Debe seleccionar al menos un destinatario");
+        }
 
-    // Buscar emisor por email para asociar correctamente el remitente
-    UserEntity emisor = userRepo.findByEmail(emailUsuario)
-            .orElseThrow(() -> new RuntimeException("El usuario autenticado no existe"));
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setFrom(emisor.getEmail());
+        mail.setTo(destinatarios.stream().map(UserEntity::getEmail).toArray(String[]::new));
+        mail.setSubject(subject);
+        mail.setText(message);
 
-    // Buscar destinatario por email
-    UserEntity destinatario = userRepo.findByEmail(form.getPara())
-            .orElseThrow(() -> new RuntimeException("El destinatario no existe"));
+        javaMailSender.send(mail);
 
-    EmailEntity email = new EmailEntity();
-    email.setEmisor(emisor);
-    email.getDestinatarios().add(destinatario);
-    email.setSubject(form.getAsunto());
-    email.setMessage(form.getMensaje());
-    email.setSentAt(LocalDateTime.now());
-    email.setStatus("ENVIADO");
+        EmailEntity email = new EmailEntity();
+        email.setEmisor(emisor);
+        email.getDestinatarios().addAll(destinatarios);
+        email.setSubject(subject);
+        email.setMessage(message);
+        email.setSentAt(LocalDateTime.now());
+        email.setStatus("ENVIADO");
 
-    emailRepository.save(email);
-}
-
-
-
-
-
-
-
+        emailRepository.save(email);
+    }
 
     // Otros métodos que tenías para listar correos
 

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,13 +47,6 @@ public class CorreoController {
 
     @Autowired
     private EmailRepository correoRepo;
-
-    @GetMapping("/correo")
-    public String mostrarFormulario(Model model) {
-        model.addAttribute("correo", new CorreoDto());
-        return "formulario-correo";
-    }
-
     @GetMapping("/email")
     public String showEmailForm(){
         return "email-form";
@@ -77,6 +71,37 @@ public class CorreoController {
 
     @Autowired
 private JavaMailSender mailSender;
+
+    @PostMapping("/correo/enviar-multiples")
+    public String enviarCorreoMultiples(
+            @RequestParam(value = "destinatariosIds", required = false) List<Long> destinatariosIds,
+            @RequestParam String asunto,
+            @RequestParam String mensaje,
+            Principal principal,
+            RedirectAttributes redirectAttributes) {
+
+        if (principal == null) {
+            redirectAttributes.addFlashAttribute("errorEnvio", "Debes iniciar sesión para enviar correos.");
+            return "redirect:/dashboard";
+        }
+
+        try {
+            UserEntity emisor = userRepo.findByEmail(principal.getName())
+                    .orElseThrow(() -> new RuntimeException("No se encontró el usuario logeado"));
+
+            List<UserEntity> destinatarios = (destinatariosIds != null)
+                    ? userRepo.findAllById(destinatariosIds)
+                    : List.of();
+
+            correoService.enviarCorreoMultiple(emisor, destinatarios, asunto, mensaje);
+
+            redirectAttributes.addFlashAttribute("exitoEnvio", "Correos enviados correctamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorEnvio", e.getMessage());
+        }
+
+        return "redirect:/dashboard";
+    }
   @GetMapping("/correo/enviar")
     public String mostrarFormulario(Model model, HttpServletRequest request) {
         // Agregar token CSRF al modelo para Thymeleaf
@@ -88,78 +113,6 @@ private JavaMailSender mailSender;
 
         return "correo-enviar";
     }
-
-    
-@PostMapping("/correo/enviar")
-public String enviarCorreo(@ModelAttribute CorreoForm form,
-                           Model model,
-                           HttpServletRequest request) {
-    try {
-        // Obtener el Authentication actual
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated() ||
-            authentication.getPrincipal().equals("anonymousUser")) {
-            model.addAttribute("error", "Usuario no autenticado");
-            return "correo-enviar";
-        }
-
-        String emailUsuario;
-
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) principal;
-            emailUsuario = userDetails.getUsername(); // normalmente email o username
-        } else if (principal instanceof String) {
-            // Por si es un String con username/email
-            emailUsuario = (String) principal;
-        } else {
-            model.addAttribute("error", "No se pudo obtener el usuario logueado");
-            return "correo-enviar";
-        }
-
-        System.out.println("Email usuario logueado: " + emailUsuario);
-
-        // Buscar usuario emisor
-        UserEntity emisor = userRepo.findByEmail(emailUsuario)
-                .orElseThrow(() -> new RuntimeException("No se encontró el usuario logeado"));
-
-        // Buscar destinatario
-        UserEntity destinatario = userRepo.findByEmail(form.getPara())
-                .orElseThrow(() -> new RuntimeException("El destinatario no existe"));
-
-        // Enviar correo (SMTP)
-        SimpleMailMessage mensaje = new SimpleMailMessage();
-        mensaje.setFrom(emisor.getEmail());
-        mensaje.setTo(destinatario.getEmail());
-        mensaje.setSubject(form.getAsunto());
-        mensaje.setText(form.getMensaje());
-
-        mailSender.send(mensaje);
-
-        // Guardar correo en base de datos
-        EmailEntity correo = new EmailEntity();
-        correo.setSubject(form.getAsunto());
-        correo.setMessage(form.getMensaje());
-        correo.setStatus("ENVIADO");
-        correo.setSentAt(LocalDateTime.now());
-        correo.setEmisor(emisor);
-        correo.getDestinatarios().add(destinatario);
-
-        correoRepo.save(correo);
-
-        model.addAttribute("exito", "Correo enviado con éxito");
-
-    } catch (Exception e) {
-        model.addAttribute("error", e.getMessage());
-    }
-
-    // Añadir token CSRF
-    CsrfToken token = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
-    model.addAttribute("_csrf", token);
-
-    return "correo-enviar";
-}
 
 
     @GetMapping("/emails/sent")

@@ -11,7 +11,8 @@ public class CorreoForm {
      private String para;     // email del destinatario
     private String asunto;   // asunto del correo
     private String mensaje;  // contenido del mensaje
-    private String emisor; 
+    private String emisor;
+    private List<Long> destinatariosIds;
 
     public CorreoForm() {
 

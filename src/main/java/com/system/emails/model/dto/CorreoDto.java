@@ -4,88 +4,48 @@ import java.time.LocalDateTime;
 
 public class CorreoDto {
 
-    private String destinatario;
+    private Long id;
+    private String emisor;
+    private String destinatarios; // separados por coma
     private String asunto;
     private String mensaje;
-    private String cc;
-    private String bcc;
-
-    private String estado;            // NUEVO
-    private LocalDateTime fecha;      // NUEVO
+    private String estado;
+    private LocalDateTime fecha;
 
 
+    
     public CorreoDto() {
     }
 
-    public CorreoDto(String destinatario, String asunto, String mensaje) {
-    this.destinatario = destinatario;
-    this.asunto = asunto;
-    this.mensaje = mensaje;
-    }
-
-    public CorreoDto(String destinatario, String asunto, String mensaje, String cc, String bcc, String estado, LocalDateTime fecha) {
-        this.destinatario = destinatario;
+    // Constructor usado por ChatController (3 parámetros)
+    public CorreoDto(String para, String asunto, String mensaje) {
+        this.destinatarios = para;
         this.asunto = asunto;
         this.mensaje = mensaje;
-        this.cc = cc;
-        this.bcc = bcc;
+    }
+
+    // Constructor usado por DashboardController
+    public CorreoDto(Long id, String emisor, String destinatarios, String asunto,
+                     String mensaje, String estado, LocalDateTime fecha) {
+        this.id = id;
+        this.emisor = emisor;
+        this.destinatarios = destinatarios;
+        this.asunto = asunto;
+        this.mensaje = mensaje;
         this.estado = estado;
         this.fecha = fecha;
     }
 
-    public String getDestinatario() {
-        return destinatario;
-    }
+    public Long getId() { return id; }
+    public String getEmisor() { return emisor; }
+    public String getDestinatarios() { return destinatarios; }
+    public String getAsunto() { return asunto; }
+    public String getMensaje() { return mensaje; }
+    public String getEstado() { return estado; }
+    public LocalDateTime getFecha() { return fecha; }
 
-    public void setDestinatario(String destinatario) {
-        this.destinatario = destinatario;
-    }
-
-    public String getAsunto() {
-        return asunto;
-    }
-
-    public void setAsunto(String asunto) {
-        this.asunto = asunto;
-    }
-
-    public String getMensaje() {
-        return mensaje;
-    }
-
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
-    }
-
-    public String getCc() {
-        return cc;
-    }
-
-    public void setCc(String cc) {
-        this.cc = cc;
-    }
-
-    public String getBcc() {
-        return bcc;
-    }
-
-    public void setBcc(String bcc) {
-        this.bcc = bcc;
-    }
-
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
-    public LocalDateTime getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(LocalDateTime fecha) {
-        this.fecha = fecha;
+    // Necesario para ChatController
+    public String getPara() {
+        return destinatarios;
     }
 }

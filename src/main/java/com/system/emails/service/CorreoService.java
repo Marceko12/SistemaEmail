@@ -1,115 +1,114 @@
 package com.system.emails.service;
-import java.time.LocalDateTime;
-import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+
 
 import com.system.emails.model.EmailEntity;
+import com.system.emails.model.UserEntity;
 import com.system.emails.model.dto.CorreoDto;
+import com.system.emails.model.dto.CorreoForm;
 import com.system.emails.repository.EmailRepository;
-import lombok.RequiredArgsConstructor;
+import com.system.emails.repository.UserRepository;
 
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class CorreoService {
 
-    @Autowired
-    private JavaMailSender javaMailSender;
+    private final JavaMailSender javaMailSender;
+    private final EmailRepository emailRepository;
+    private final UserRepository userRepo;  // Repositorio para UserEntity
 
-    @Autowired
-    private EmailRepository repoEmail;
-
-
-    // logica para el envio de correo electronico desde formulario
-    public EmailEntity sendEmail(String to, String subject, String message){
-
+    // Lógica para envío simple de correo y guardado en BD
+   public EmailEntity sendEmail(String to, String subject, String message) {
         EmailEntity email = new EmailEntity();
-        email.setRecipient(to);
         email.setSubject(subject);
         email.setMessage(message);
         email.setSentAt(LocalDateTime.now());
-    
+        email.setStatus("PENDIENTE");
+        // No uses setRecipient porque no existe
 
-         try {
+        try {
             SimpleMailMessage mail = new SimpleMailMessage();
             mail.setTo(to);
             mail.setSubject(subject);
             mail.setText(message);
 
             javaMailSender.send(mail);
-
             email.setStatus("ENVIADO");
 
         } catch (Exception e) {
             email.setStatus("ERROR");
         }
 
-        return repoEmail.save(email);
-    
-    
+        return emailRepository.save(email);
     }
 
 
+    // Método para guardar correo con relación a usuarios y múltiples destinatarios
+    
+ public void guardarCorreo(CorreoForm form) {
 
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-
-
-    public void enviarCorreo(CorreoDto correoDto) {
-        SimpleMailMessage mensaje = new SimpleMailMessage();
-
-        if (correoDto.getDestinatario() == null || correoDto.getDestinatario().isEmpty()) {
-            throw new IllegalArgumentException("El destinatario no puede estar vacío");
-        }
-
-        mensaje.setTo(correoDto.getDestinatario());
-        mensaje.setSubject(correoDto.getAsunto());
-        mensaje.setText(correoDto.getMensaje());
-
-        if (correoDto.getCc() != null && !correoDto.getCc().isEmpty()) {
-            mensaje.setCc(correoDto.getCc());
-        }
-        if (correoDto.getBcc() != null && !correoDto.getBcc().isEmpty()) {
-            mensaje.setBcc(correoDto.getBcc());
-        }
-
-        try {
-            javaMailSender.send(mensaje);
-
-            // Guardar email en BD
-            EmailEntity email = new EmailEntity();
-            email.setRecipient(correoDto.getDestinatario());
-            email.setSubject(correoDto.getAsunto());
-            email.setMessage(correoDto.getMensaje());
-            email.setSentAt(LocalDateTime.now());
-            email.setStatus("ENVIADO");
-
-            // Si tienes un campo sender (quién envía), asegúrate de setearlo también:
-            email.setSender("testuser@example.com"); // o el email real si tienes sesión
-
-            repoEmail.save(email);
-
-            System.out.println("Correo enviado y guardado");
-        } catch (MailException e) {
-            System.out.println("Error al enviar correo " + e.getMessage());
-        }
+    if (auth == null || !auth.isAuthenticated()) {
+        throw new RuntimeException("No hay usuario autenticado");
     }
 
+    // Spring Security devuelve NOMBRE, no email
+    String nombreUsuario = auth.getName();
+
+    // Buscar emisor por nombre
+    UserEntity emisor = userRepo.findByNombre(nombreUsuario)
+            .orElseThrow(() -> new RuntimeException("El usuario autenticado no existe"));
+
+    // Buscar destinatario por email
+    UserEntity destinatario = userRepo.findByEmail(form.getPara())
+            .orElseThrow(() -> new RuntimeException("El destinatario no existe"));
+
+    EmailEntity email = new EmailEntity();
+    email.setEmisor(emisor);
+    email.getDestinatarios().add(destinatario);
+    email.setSubject(form.getAsunto());
+    email.setMessage(form.getMensaje());
+    email.setSentAt(LocalDateTime.now());
+    email.setStatus("ENVIADO");
+
+    emailRepository.save(email);
+}
 
 
-    // LOGICA PARA LISTAR CORREOS ENVADOS Y RECIBIDOS
+
+
+
+
+
+
+
+    // Otros métodos que tenías para listar correos
+
     public List<EmailEntity> getSentEmail(String sender){
-        return repoEmail.findBySender(sender);
+        return emailRepository.findByEmisor_Email(sender);
     }
-
 
     public List<EmailEntity> getReceivedEmail(String recipient){
-        return repoEmail.findByRecipient(recipient);
+        return emailRepository.findByDestinatarios_Email(recipient);
     }
-    
-    
+
 }

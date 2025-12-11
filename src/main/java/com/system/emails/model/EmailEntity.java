@@ -1,13 +1,11 @@
 package com.system.emails.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,8 +23,18 @@ public class EmailEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String sender;
-    private String recipient;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "emisor_id")
+    private UserEntity emisor;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "email_destinatarios",
+        joinColumns = @JoinColumn(name = "email_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<UserEntity> destinatarios = new ArrayList<>();
+
     private String subject;
 
     @Column(columnDefinition = "TEXT")
@@ -35,8 +43,6 @@ public class EmailEntity {
     private String status;
 
     private LocalDateTime sentAt;
+
     
-    // getters y setters
 }
-
-

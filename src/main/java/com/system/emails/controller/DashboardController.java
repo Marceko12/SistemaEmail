@@ -24,29 +24,6 @@ public class DashboardController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
 
-        CorreoDto c1 = new CorreoDto(
-            "test1@gmail.com",
-            "Correo de prueba",
-            "Mensaje de ejemplo 1",
-            null,
-            null,
-            "ENVIADO",
-            LocalDateTime.now()
-        );
-
-        CorreoDto c2 = new CorreoDto(
-            "test2@gmail.com",
-            "Segundo correo",
-            "Mensaje de ejemplo 2",
-            null,
-            null,
-            "ERROR",
-            LocalDateTime.now().minusHours(1)
-        );
-
-        List<CorreoDto> lista = Arrays.asList(c1, c2);
-
-        model.addAttribute("correos", lista);
 
         List<UserEntity> clients = userService.findAllUsersByRole("CLIENTE");
         System.out.println("Clientes encontrados: " + clients.size());

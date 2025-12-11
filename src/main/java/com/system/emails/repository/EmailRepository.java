@@ -7,11 +7,10 @@ import java.util.List;
 
 
 public interface EmailRepository extends JpaRepository<EmailEntity, Long> {
-    // Listar correos enviados
-    List<EmailEntity> findBySender(String sender);
-    
-    // listar correos recibidos 
-    List<EmailEntity> findByRecipient(String recipient);
+     List<EmailEntity> findByEmisor_Email(String email);
+
+    // Buscar por destinatario
+    List<EmailEntity> findByDestinatarios_Email(String email);
 
     
 } 

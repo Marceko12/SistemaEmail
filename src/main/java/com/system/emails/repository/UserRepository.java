@@ -9,7 +9,8 @@ import com.system.emails.model.UserEntity;
 
 public interface UserRepository extends JpaRepository<UserEntity,Long> {
 
-    
-    Optional<UserEntity> findByEmail(String email);
+    Optional<UserEntity> findByNombre(String nombre);   
     List<UserEntity> findDistinctByRolesNombre(String nombre);
+        Optional<UserEntity> findByEmail(String email);
+
 }

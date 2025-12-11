@@ -1,0 +1,17 @@
+<form th:action="@{/correo/enviar}" method="post">
+<input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+    <label>Para:</label>
+    <input type="email" name="para" required />
+
+    <label>Asunto:</label>
+    <input type="text" name="asunto" required />
+
+    <label>Mensaje:</label>
+    <textarea name="mensaje" required></textarea>
+
+    <button type="submit">Enviar</button>
+
+    <p th:if="${exito}" th:text="${exito}" style="color:green;"></p>
+    <p th:if="${error}" th:text="${error}" style="color:red;"></p>
+</form>

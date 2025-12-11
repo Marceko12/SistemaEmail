@@ -47,6 +47,13 @@ public class UserController {
 
     }
 
+
+     @PostMapping("/create-admin")
+    public String createAdmin() {
+        userService.crearUsuarioAdmin("admin", "12345");
+        return "Admin creado";
+    }
+
     
     
 }

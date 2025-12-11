@@ -19,12 +19,16 @@
     <details class="group">
       <summary class="px-4 py-2 rounded-lg hover:bg-indigo-100 cursor-pointer select-none font-medium flex justify-between items-center">📧 Correos</summary>
       <div class="ml-4 mt-2 flex flex-col gap-2">
-        <a class="px-3 py-1 rounded hover:bg-gray-200 cursor-pointer">Enviados</a>
-        <a class="px-3 py-1 rounded hover:bg-gray-200 cursor-pointer">Recibidos</a>
+        <a href="/emails/sent" class="px-3 py-1 rounded hover:bg-gray-200 cursor-pointer">Enviados</a>
+        <a href="/emails/received" class="px-3 py-1 rounded hover:bg-gray-200 cursor-pointer">Recibidos</a>
       </div>
     </details>
 
-    <a class="px-4 py-2 rounded-lg hover:bg-indigo-100 cursor-pointer font-medium">👤 Usuarios</a>
+    <a href="/users/clients" class="px-4 py-2 rounded-lg hover:bg-indigo-100 cursor-pointer font-medium">👤 Clientes</a>
+
+    <!-- Enlace a registro agregado -->
+    <a href="/users/register" class="px-4 py-2 rounded-lg hover:bg-indigo-100 cursor-pointer font-medium">📝 Registrar clientes</a>
+
     <a class="px-4 py-2 rounded-lg hover:bg-indigo-100 cursor-pointer font-medium">⚙ Configuración</a>
     <a class="px-4 py-2 rounded-lg hover:bg-red-100 cursor-pointer font-medium text-red-600">🚪 Cerrar sesión</a>
   </nav>
@@ -99,38 +103,37 @@
       </div>
     </section>
 
-    <!-- Formulario para enviar correo -->
-    <section id="formulario-correo-section" class="hidden mt-10">
-      <div class="bg-white p-6 rounded-xl shadow">
-        <h4 class="text-2xl font-bold mb-4">Enviar Correo</h4>
 
-        <form id="form-correo" method="post" action="/correo/enviar" class="space-y-4" novalidate>
+  <!-- Formulario para enviar correo -->
+  <section id="formulario-correo-section" class="mt-10">
+    <div class="bg-white p-6 rounded-xl shadow">
+      <h4 class="text-2xl font-bold mb-4">Enviar Correo</h4>
 
-          <div>
-            <label for="correo-para" class="font-medium">Para</label>
-            <input id="correo-para" name="destinatario" type="email" required
-                   class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300" />
-          </div>
+      <form id="form-correo" method="post" action="/correo/enviar" class="space-y-4" novalidate>
 
-          <div>
-            <label for="correo-asunto" class="font-medium">Asunto</label>
-            <input id="correo-asunto" name="asunto" type="text" required
-                   class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300" />
-          </div>
+        <div>
+          <label for="correo-para" class="font-medium">Para</label>
+          <input id="correo-para" name="destinatario" type="email" required
+                 class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300" />
+        </div>
 
-          <div>
-            <label for="correo-mensaje" class="font-medium">Mensaje</label>
-            <textarea id="correo-mensaje" name="mensaje" rows="5" required
-                      class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300"></textarea>
-          </div>
+        <div>
+          <label for="correo-asunto" class="font-medium">Asunto</label>
+          <input id="correo-asunto" name="asunto" type="text" required
+                 class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300" />
+        </div>
 
-          <button class="bg-green-600 text-white px-4 py-2 rounded-lg">Enviar Correo</button>
-          <button type="button" id="cancelar-envio" class="bg-gray-400 text-white px-4 py-2 rounded-lg ml-2">Cancelar</button>
-        </form>
-      </div>
-    </section>
+        <div>
+          <label for="correo-mensaje" class="font-medium">Mensaje</label>
+          <textarea id="correo-mensaje" name="mensaje" rows="5" required
+                    class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-indigo-300"></textarea>
+        </div>
 
-  </main>
+        <button class="bg-green-600 text-white px-4 py-2 rounded-lg">Enviar Correo</button>
+        <button type="button" id="cancelar-envio" class="bg-gray-400 text-white px-4 py-2 rounded-lg ml-2">Cancelar</button>
+      </form>
+    </div>
+  </section>
 
   <!-- CHATBOT BURBUJA -->
   <button id="chatbot-bubble" class="fixed bottom-6 right-6 bg-indigo-600 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center text-3xl">💬</button>

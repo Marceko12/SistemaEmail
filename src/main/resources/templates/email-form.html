@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Enviar Correo</title>
+</head>
+<body>
+
+<h2>Enviar correo</h2>
+
+<p th:if="${msg}" th:text="${msg}" style="color: green;"></p>
+
+<form th:action="@{/email/send}" method="post">
+
+    <label>Para:</label><br>
+    <input type="email" name="to" required><br><br>
+
+    <label>Asunto:</label><br>
+    <input type="text" name="subject" required><br><br>
+
+    <label>Mensaje:</label><br>
+    <textarea name="message" rows="5" required></textarea><br><br>
+
+    <button type="submit">Enviar</button>
+</form>
+
+</body>
+</html>

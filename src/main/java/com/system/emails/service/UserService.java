@@ -33,7 +33,8 @@ public class UserService {
         UserEntity user = new UserEntity();
         user.setNombre(nombre);
         user.setEmail(email);
-        user.setPassword(password);
+        // Almacenar la contraseña hasheada para que la autenticación sea válida
+        user.setPassword(passwordEncoder.encode(password));
 
         // obtener rol CLIENTE
         RoleEntity rolCliente = rolRepo.findByNombre("CLIENTE");

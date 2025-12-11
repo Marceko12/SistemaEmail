@@ -71,11 +71,11 @@ public class CorreoService {
         throw new RuntimeException("No hay usuario autenticado");
     }
 
-    // Spring Security devuelve NOMBRE, no email
-    String nombreUsuario = auth.getName();
+    // Spring Security devuelve el email (username) configurado en CustomUserDetailsService
+    String emailUsuario = auth.getName();
 
-    // Buscar emisor por nombre
-    UserEntity emisor = userRepo.findByNombre(nombreUsuario)
+    // Buscar emisor por email para asociar correctamente el remitente
+    UserEntity emisor = userRepo.findByEmail(emailUsuario)
             .orElseThrow(() -> new RuntimeException("El usuario autenticado no existe"));
 
     // Buscar destinatario por email
@@ -92,7 +92,6 @@ public class CorreoService {
 
     emailRepository.save(email);
 }
-
 
 
 

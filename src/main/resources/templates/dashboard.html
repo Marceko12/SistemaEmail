@@ -85,7 +85,7 @@
             </thead>
 
             <tbody class="text-gray-700 divide-y">
-              <tr th:each="item : ${listaCorreos}" class="hover:bg-gray-100">
+               <tr th:each="item : ${listaCorreos}" class="hover:bg-gray-100">
                 <td class="px-4 py-3" th:text="${item.destinatario}"></td>
                 <td class="px-4 py-3" th:text="${item.asunto}"></td>
                 <td class="px-4 py-3">
@@ -110,6 +110,7 @@
         <h4 class="text-2xl font-bold mb-4">Enviar Correo</h4>
 
         <form id="form-correo" method="post" action="/correo/enviar" class="space-y-4">
+          <input type="hidden" name="_csrf" th:value="${_csrf.token}" th:if="${_csrf != null}" />
 
           <div>
             <label for="correo-para" class="font-medium">Para</label>
@@ -156,6 +157,11 @@
     const chatbotBubble = document.getElementById("chatbot-bubble");
     const chatbotContainer = document.getElementById("chatbot-container");
 
+    function getCsrfToken() {
+      const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+      return match ? decodeURIComponent(match[1]) : "";
+    }
+
     chatbotBubble.addEventListener("click", () => {
       chatbotContainer.classList.toggle("hidden");
     });
@@ -184,7 +190,10 @@
       try {
         const response = await fetch("/chat/mensaje", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-XSRF-TOKEN": getCsrfToken(),
+          },
           body: JSON.stringify({ mensaje: texto }),
         });
 

@@ -22,15 +22,15 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          <tr th:each="email : ${emails}" 
+          <tr th:each="email : ${emails}"
               class="hover:bg-indigo-50 transition-colors duration-300 cursor-pointer transform hover:scale-[1.02]">
-            <td class="px-6 py-4" th:text="${email.sender}">remitente@example.com</td>
+            <td class="px-6 py-4" th:text="${email.emisor != null ? email.emisor.email : 'Desconocido'}">remitente@example.com</td>
             <td class="px-6 py-4" th:text="${email.subject}">Asunto del correo</td>
             <td class="px-6 py-4" th:text="${#dates.format(email.sentAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</td>
             <td class="px-6 py-4">
-              <span th:classappend="${email.status == 'OK'} ? 'bg-green-500' : 'bg-red-500'" 
+              <span th:classappend="${email.status == 'ENVIADO'} ? 'bg-green-500' : 'bg-red-500'"
                     class="text-white px-3 py-1 rounded-full text-sm font-semibold select-none">
-                <span th:text="${email.status == 'OK'} ? 'Recibido' : 'Error'">Estado</span>
+                <span th:text="${email.status == 'ENVIADO'} ? 'Recibido' : 'Error'">Estado</span>
               </span>
             </td>
           </tr>
